@@ -1,0 +1,32 @@
+# Environment variables and secrets
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Airflow generated files
+logs/
+__pycache__/
+*.pyc
+
+# Airflow local configuration
+airflow.cfg
+
+# DuckDB database files
+warehouse/*.duckdb
+warehouse/*.duckdb.wal
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+.pytest_cache/
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# Lean stack secrets
+lean-stack/.env
