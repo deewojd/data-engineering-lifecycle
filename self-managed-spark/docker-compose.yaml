@@ -41,3 +41,22 @@ services:
       - "./data:/opt/spark/data"
       - "./scripts:/opt/spark/scripts"
       - "./output:/opt/spark/output"
+  airflow:
+    build:
+      context: ./airflow
+    container_name: spark-airflow
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8080"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+    volumes:
+      - "./airflow/dags:/opt/airflow/dags"
+      - "./scripts:/opt/airflow/scripts"
+      - "./data:/opt/airflow/data"
+      - "./output:/opt/spark/output"
+      - "./data:/opt/spark/data"
+    command: standalone
