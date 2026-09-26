@@ -1,204 +1,319 @@
-# Data Engineering Lifecycle: Lean Stack
+# Data Engineering Lifecycle: Choosing Technologies
 
-A small, reproducible data engineering pipeline built with **Python, Apache Airflow, Pandas, and DuckDB**.
+A hands-on data engineering project exploring how technology choices affect the design, development, and operation of a data pipeline.
 
-This project explores how a lean technology stack can be used to build, orchestrate, and run a simple data pipeline locally in a containerized environment.
+Inspired by Chapter 4, **“Choosing Technologies Across the Data Engineering Lifecycle,”** from *Fundamentals of Data Engineering*.
+
+The project implements the same small daily sales pipeline using three different technology approaches:
+
+1. **Lean Stack:** Python, Pandas, DuckDB, and Apache Airflow
+2. **Self-Managed Spark:** PySpark, Spark Standalone, Parquet, DuckDB, and Apache Airflow
+3. **Databricks:** Spark, Delta Lake, Databricks SQL, and Databricks Workflows
+
+The goal is to understand how workload characteristics, team expertise, scalability, governance, operational ownership, and managed services influence technology selection.
+
+---
 
 ## Project Overview
 
-The pipeline processes daily sales data from a CSV file, cleans and transforms the data, calculates revenue, aggregates sales by date and product, and stores the results in a DuckDB database.
+The pipeline processes daily sales data by:
 
-**Pipeline flow:**
+* Reading sales records from CSV
+* Validating and cleaning the data
+* Calculating revenue
+* Aggregating sales by date and product
+* Persisting the analytical output
+* Querying the resulting data with SQL
 
-```text
-CSV
- │
- ▼
-Apache Airflow
- │
- ▼
-Python + Pandas
- │
- ▼
-DuckDB
-```
+The business logic is intentionally kept consistent across implementations so that the technology choices can be compared more directly.
 
-## Technology Stack
+### Input
 
-| Technology     | Purpose                               |
-| -------------- | ------------------------------------- |
-| Python         | Data transformation logic             |
-| Pandas         | Data cleaning and manipulation        |
-| Apache Airflow | Pipeline orchestration and scheduling |
-| DuckDB         | Local analytical data storage         |
-| Docker         | Reproducible execution environment    |
+A small daily sales CSV containing:
 
-## Pipeline
+* Order date
+* Product
+* Quantity
+* Unit price
 
-The pipeline performs the following steps:
-
-1. Reads daily sales data from a CSV file.
-2. Converts the order date into a date format.
-3. Filters invalid records where:
-
-   * Quantity is less than or equal to 0
-   * Unit price is negative
-4. Calculates revenue:
+### Transformation
 
 ```text
+quantity > 0
+unit_price >= 0
 revenue = quantity × unit_price
 ```
 
-5. Aggregates sales by:
-
-   * Order date
-   * Product
-6. Calculates:
-
-   * Total quantity
-   * Total revenue
-7. Writes the resulting table to DuckDB.
-
-## Example Input
-
-The pipeline uses sales data with the following structure:
+The pipeline then aggregates:
 
 ```text
-order_id
-order_date
-product
-quantity
-unit_price
+order_date + product
+        ↓
+total_quantity
+total_revenue
 ```
 
-Example:
+---
 
-```csv
-order_id,order_date,product,quantity,unit_price
-1001,2026-09-01,Notebook,2,12.00
-1002,2026-09-01,Pen,5,2.50
-1003,2026-09-01,Notebook,1,12.00
-```
+## Architecture
 
-## Example Output
-
-The pipeline produces a `daily_sales_summary` table containing:
-
-| order_date | product  | total_quantity | total_revenue |
-| ---------- | -------- | -------------: | ------------: |
-| 2026-09-01 | Notebook |              3 |         36.00 |
-| 2026-09-01 | Pen      |              5 |         12.50 |
-| 2026-09-02 | Backpack |              1 |         45.00 |
-| 2026-09-02 | Notebook |              2 |         24.00 |
-| 2026-09-02 | Pen      |              3 |          7.50 |
-
-## Airflow Orchestration
-
-Apache Airflow schedules and runs the transformation pipeline.
-
-The DAG:
+### 1. Lean Stack
 
 ```text
-daily_sales_pipeline
-        │
-        ▼
-run_sales_pipeline
-        │
-        ▼
-transform_sales.py
+CSV
+ ↓
+Apache Airflow
+ ↓
+Python + Pandas
+ ↓
+DuckDB
+ ↓
+SQL
 ```
 
-The DAG is configured to run daily and uses Docker to provide a consistent execution environment.
+**Technologies**
+
+* Python
+* Pandas
+* Apache Airflow
+* DuckDB
+* Docker
+
+**Purpose**
+
+This implementation represents a relatively lightweight architecture for a small analytical workload.
+
+[Explore the Lean Stack](./lean-stack/)
+
+---
+
+### 2. Self-Managed Spark
+
+```text
+CSV
+ ↓
+Apache Airflow
+ ↓
+spark-submit
+ ↓
+Spark Standalone
+ ├── Worker 1
+ └── Worker 2
+ ↓
+PySpark
+ ↓
+Parquet
+ ↓
+DuckDB
+ ↓
+SQL
+```
+
+**Technologies**
+
+* PySpark
+* Apache Spark
+* Spark Standalone
+* Apache Airflow
+* Parquet
+* DuckDB
+* Docker
+
+**Purpose**
+
+This implementation explores what changes when the processing layer moves from a lightweight Python workflow to distributed Spark while the infrastructure and cluster management remain under the team's responsibility.
+
+[Explore the Self-Managed Spark implementation](./self-managed-spark/)
+
+---
+
+### 3. Databricks
+
+```text
+CSV
+ ↓
+Databricks Workflows
+ ↓
+Apache Spark
+ ↓
+Delta Lake
+ ↓
+Databricks SQL
+```
+
+**Technologies**
+
+* Databricks
+* Apache Spark
+* Delta Lake
+* Databricks Workflows
+* Databricks SQL
+
+**Purpose**
+
+This implementation explores a managed data platform where infrastructure and much of the operational complexity are delegated to the platform.
+
+[Explore the Databricks implementation](./databricks/)
+
+---
+
+## Technology Comparison
+
+| Implementation     | Processing      | Storage / Query Layer       | Orchestration / Cluster Management | Environment   |
+| ------------------ | --------------- | --------------------------- | ---------------------------------- | ------------- |
+| Lean Stack         | Python + Pandas | DuckDB                      | Apache Airflow                     | Local Docker  |
+| Self-Managed Spark | PySpark         | Parquet + DuckDB            | Apache Airflow + Spark Standalone  | Local Docker  |
+| Databricks         | Spark           | Delta Lake + Databricks SQL | Databricks Workflows               | Managed Cloud |
+
+---
+
+## What Stays the Same
+
+To make the comparison clear, the core business logic remains consistent across implementations.
+
+Each pipeline:
+
+1. Reads the same sales data
+2. Applies the same validation rules
+3. Calculates revenue
+4. Groups by date and product
+5. Produces the same analytical result
+6. Supports SQL-based analysis
+
+This allows the project to focus on the impact of **technology and architecture choices**, rather than differences in business requirements.
+
+---
+
+## What Changes
+
+The implementations differ primarily in how the pipeline handles:
+
+### Processing
+
+* Python/Pandas
+* Distributed PySpark
+* Managed Spark
+
+### Storage
+
+* DuckDB database
+* Parquet files
+* Delta Lake
+
+### Orchestration
+
+* Airflow
+* Airflow 
+* Databricks Workflows
+
+### Operational Ownership
+
+The project also demonstrates a progression from:
+
+```text
+More infrastructure managed by the team
+                ↓
+        Self-managed Spark
+                ↓
+     More platform-managed services
+                ↓
+            Databricks
+```
+
+This illustrates an important data engineering tradeoff: choosing technologies is not only about processing capability. It also involves operational responsibility, team expertise, governance, scalability, and the amount of infrastructure a team wants to manage itself.
+
+---
+
+## Results
+
+The first two implementations produce the same analytical results from the shared input dataset.
+
+### Revenue by Product
+
+| Product  | Revenue |
+| -------- | ------: |
+| Notebook |  $60.00 |
+| Backpack |  $45.00 |
+| Pen      |  $20.00 |
+
+The Self-Managed Spark implementation successfully runs the pipeline through:
+
+```text
+Airflow
+ → spark-submit
+ → Spark Standalone
+ → PySpark
+ → Parquet
+ → DuckDB
+```
+
+The Databricks implementation will be evaluated using the same business logic and output expectations.
+
+---
+
+## Key Data Engineering Concepts Demonstrated
+
+* Data pipeline design
+* Workflow orchestration
+* Batch processing
+* Distributed processing with Spark
+* Spark cluster management
+* PySpark
+* Columnar storage with Parquet
+* Analytical SQL
+* DuckDB
+* Managed data platforms
+* Delta Lake
+* Technology selection
+* Operational ownership
+* Scalability considerations
+* Reproducible local environments with Docker
+* Git-based project organization
+
+---
 
 ## Project Structure
 
 ```text
-lean-stack/
-├── .gitignore
-├── Dockerfile
-├── docker-compose.yaml
-├── dags/
-│   └── daily_sales_dag.py
-├── data/
-│   └── daily_sales.csv
-├── scripts/
-│   └── transform_sales.py
-└── warehouse/
-    └── sales.duckdb  # generated locally when the pipeline runs
+data-engineering-lifecycle/
+│
+├── lean-stack/
+│   ├── dags/
+│   ├── data/
+│   ├── scripts/
+│   ├── warehouse/
+│   ├── Dockerfile
+│   └── docker-compose.yaml
+│
+├── self-managed-spark/
+│   ├── airflow/
+│   │   ├── dags/
+│   │   └── Dockerfile
+│   ├── data/
+│   ├── scripts/
+│   ├── output/
+│   ├── Dockerfile
+│   └── docker-compose.yaml
+│
+└── databricks/ 
 ```
 
-The DuckDB database and Airflow-generated files are excluded from Git because they are created locally when the pipeline runs.
+---
 
-## Running the Pipeline
+## Status
 
-### 1. Clone the repository
+| Implementation     | Status      |
+| ------------------ | ----------- |
+| Lean Stack         | Complete    |
+| Self-Managed Spark | Complete    |
+| Databricks         | In progress |
 
-```bash
-git clone https://github.com/deewojd/data-engineering-lifecycle.git
-cd data-engineering-lifecycle/lean-stack
-```
+---
 
-### 2. Start Airflow
+## References
 
-```bash
-docker compose up -d
-```
-
-### 3. Open Airflow
-
-Open:
-
-```text
-http://localhost:8080
-```
-
-The local Airflow environment uses the default development credentials configured during setup.
-
-### 4. Run the DAG
-
-From the Airflow UI, locate:
-
-```text
-daily_sales_pipeline
-```
-
-and trigger a run.
-
-The DAG executes the Python transformation and writes the resulting data to DuckDB.
-
-### 5. Stop the environment
-
-```bash
-docker compose down
-```
-
-## Why This Stack?
-
-The goal of this implementation is to demonstrate how a relatively small data pipeline can be built using a **lean technology stack**.
-
-Each component has a focused responsibility:
-
-* **Python/Pandas** handles transformation logic.
-* **Airflow** handles orchestration and scheduling.
-* **DuckDB** provides local analytical storage.
-* **Docker** creates a reproducible environment.
-
-This approach keeps the architecture relatively simple while still demonstrating important data engineering concepts such as **orchestration, transformation, data quality filtering, analytical storage, containerization, and reproducibility**.
-
-## Key Takeaways
-
-This implementation demonstrates:
-
-* Building a batch data pipeline
-* Separating transformation logic from orchestration
-* Scheduling workflows with Apache Airflow
-* Performing data cleaning and aggregation with Pandas
-* Writing analytical results to DuckDB
-* Containerizing a data engineering environment with Docker
-* Creating a reproducible local development setup
-
-## Project Status
-
-**Lean Stack: Complete**
-
-Future versions of this project will implement the same pipeline using additional technologies to compare how different technology choices affect development, operations, scalability, and ownership across the data engineering lifecycle.
+* *Fundamentals of Data Engineering:* Joe Reis and Matt Housley
+* Apache Airflow documentation
+* Apache Spark documentation
+* DuckDB documentation
+* Databricks documentation
