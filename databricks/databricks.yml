@@ -1,0 +1,5 @@
+bundle:
+  name: data-engineering-lifecycle
+
+include:
+  - resources/*.yml
