@@ -1,0 +1,7 @@
+order_id,order_date,product,quantity,unit_price
+1001,2026-09-01,Notebook,2,12.00
+1002,2026-09-01,Pen,5,2.50 
+1003,2026-09-01,Notebook,1,12.00 
+1004,2026-09-02,Backpack,1,45.00 
+1005,2026-09-02,Pen,3,2.50 
+1006,2026-09-02,Notebook,2,12.00
