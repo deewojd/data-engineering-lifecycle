@@ -4,7 +4,7 @@ A hands-on data engineering project exploring how technology choices affect the 
 
 Inspired by Chapter 4, **“Choosing Technologies Across the Data Engineering Lifecycle,”** from *Fundamentals of Data Engineering*.
 
-The project implements the same small daily sales pipeline using three different technology approaches:
+The project implements the same daily sales pipeline using three different technology approaches:
 
 1. **Lean Stack:** Python, Pandas, DuckDB, and Apache Airflow
 2. **Self-Managed Spark:** PySpark, Spark Standalone, Parquet, DuckDB, and Apache Airflow
@@ -146,14 +146,15 @@ Databricks SQL
 * Databricks
 * Apache Spark
 * Delta Lake
-* Databricks Jobs / Workflows
+* Databricks Jobs
 * Databricks SQL
+* Declarative Automation Bundles
 
 **Purpose**
 
 This implementation explores a managed data platform where infrastructure and much of the operational complexity are delegated to the platform.
 
-The Databricks notebook and Job configuration are maintained through Git, with the Job configuration represented as a Databricks bundle resource.
+The Databricks notebook and Job configuration are maintained in GitHub, with the Job configuration represented as a Declarative Automation Bundle resource.
 
 [Explore the Databricks implementation](./databricks/)
 
@@ -165,7 +166,7 @@ The Databricks notebook and Job configuration are maintained through Git, with t
 | ------------------ | --------------- | --------------------------- | ---------------------------------- | ------------- |
 | Lean Stack         | Python + Pandas | DuckDB                      | Apache Airflow                     | Local Docker  |
 | Self-Managed Spark | PySpark         | Parquet + DuckDB            | Apache Airflow + Spark Standalone  | Local Docker  |
-| Databricks         | Apache Spark    | Delta Lake + Databricks SQL | Databricks Jobs / Workflows        | Managed Cloud |
+| Databricks         | Apache Spark    | Delta Lake + Databricks SQL | Databricks Jobs                    | Managed Cloud |
 
 ---
 
@@ -206,7 +207,7 @@ The implementations differ primarily in how the pipeline handles:
 
 * Airflow
 * Airflow + Spark Standalone
-* Databricks Jobs / Workflows
+* Databricks Jobs
 
 ### Operational Ownership
 
@@ -260,6 +261,8 @@ Airflow
  → DuckDB
 ```
 
+The Spark implementation was also verified with Spark workers running under Spark Standalone and the pipeline successfully orchestrated through Airflow.
+
 ### Databricks
 
 The pipeline successfully runs through:
@@ -271,7 +274,15 @@ Databricks Jobs
  → Databricks SQL
 ```
 
-The Databricks implementation also demonstrates Git-based management of the notebook and Job configuration.
+The Databricks Job configuration is maintained as code in GitHub using a Declarative Automation Bundle.
+
+The bundle was:
+
+* Successfully validated with the Databricks CLI
+* Successfully deployed to Databricks
+* Successfully executed through the deployed Job
+
+The deployed Job completed with a successful run status.
 
 ---
 
@@ -288,13 +299,14 @@ The Databricks implementation also demonstrates Git-based management of the note
 * DuckDB
 * Managed data platforms
 * Delta Lake
-* Databricks Jobs / Workflows
+* Databricks Jobs
+* Declarative Automation Bundles
 * Technology selection
 * Operational ownership
 * Scalability considerations
 * Reproducible local environments with Docker
 * Git-based project organization
-* Infrastructure and configuration as code
+* Configuration as code
 
 ---
 
@@ -333,19 +345,20 @@ data-engineering-lifecycle/
 
 ## Status
 
-| Implementation     | Status   |
-| ------------------ | -------- |
-| Lean Stack         | Complete |
-| Self-Managed Spark | Complete |
-| Databricks         | Complete |
+| Implementation     | Status                                                                            |
+| ------------------ | --------------------------------------------------------------------------------- |
+| Lean Stack         | Complete                                                                          |
+| Self-Managed Spark | Complete                                                                          |
+| Databricks         | Complete                                                                          |
 
 ---
 
 ## References
 
-* *Fundamentals of Data Engineering:* Joe Reis and Matt Housley
+* *Fundamentals of Data Engineering* by Joe Reis and Matt Housley
 * Apache Airflow documentation
 * Apache Spark documentation
 * DuckDB documentation
 * Databricks documentation
+* Databricks Declarative Automation Bundles documentation
 
