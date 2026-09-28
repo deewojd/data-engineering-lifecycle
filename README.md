@@ -8,7 +8,7 @@ The project implements the same small daily sales pipeline using three different
 
 1. **Lean Stack:** Python, Pandas, DuckDB, and Apache Airflow
 2. **Self-Managed Spark:** PySpark, Spark Standalone, Parquet, DuckDB, and Apache Airflow
-3. **Databricks:** Spark, Delta Lake, Databricks SQL, and Databricks Workflows
+3. **Databricks:** Apache Spark, Delta Lake, Databricks SQL, and Databricks Jobs
 
 The goal is to understand how workload characteristics, team expertise, scalability, governance, operational ownership, and managed services influence technology selection.
 
@@ -81,7 +81,7 @@ SQL
 
 **Purpose**
 
-This implementation represents a relatively lightweight architecture for a small analytical workload.
+This implementation represents a lightweight architecture for a small analytical workload, with minimal infrastructure and operational overhead.
 
 [Explore the Lean Stack](./lean-stack/)
 
@@ -132,7 +132,7 @@ This implementation explores what changes when the processing layer moves from a
 ```text
 CSV
  ↓
-Databricks Workflows
+Databricks Jobs
  ↓
 Apache Spark
  ↓
@@ -146,12 +146,14 @@ Databricks SQL
 * Databricks
 * Apache Spark
 * Delta Lake
-* Databricks Workflows
+* Databricks Jobs / Workflows
 * Databricks SQL
 
 **Purpose**
 
 This implementation explores a managed data platform where infrastructure and much of the operational complexity are delegated to the platform.
+
+The Databricks notebook and Job configuration are maintained through Git, with the Job configuration represented as a Databricks bundle resource.
 
 [Explore the Databricks implementation](./databricks/)
 
@@ -163,7 +165,7 @@ This implementation explores a managed data platform where infrastructure and mu
 | ------------------ | --------------- | --------------------------- | ---------------------------------- | ------------- |
 | Lean Stack         | Python + Pandas | DuckDB                      | Apache Airflow                     | Local Docker  |
 | Self-Managed Spark | PySpark         | Parquet + DuckDB            | Apache Airflow + Spark Standalone  | Local Docker  |
-| Databricks         | Spark           | Delta Lake + Databricks SQL | Databricks Workflows               | Managed Cloud |
+| Databricks         | Apache Spark    | Delta Lake + Databricks SQL | Databricks Jobs / Workflows        | Managed Cloud |
 
 ---
 
@@ -200,24 +202,22 @@ The implementations differ primarily in how the pipeline handles:
 * Parquet files
 * Delta Lake
 
-### Orchestration
+### Orchestration and Cluster Management
 
 * Airflow
-* Airflow 
-* Databricks Workflows
+* Airflow + Spark Standalone
+* Databricks Jobs / Workflows
 
 ### Operational Ownership
 
-The project also demonstrates a progression from:
+The project demonstrates a progression from:
 
 ```text
 More infrastructure managed by the team
                 ↓
         Self-managed Spark
                 ↓
-     More platform-managed services
-                ↓
-            Databricks
+       Managed Databricks platform
 ```
 
 This illustrates an important data engineering tradeoff: choosing technologies is not only about processing capability. It also involves operational responsibility, team expertise, governance, scalability, and the amount of infrastructure a team wants to manage itself.
@@ -226,7 +226,7 @@ This illustrates an important data engineering tradeoff: choosing technologies i
 
 ## Results
 
-The first two implementations produce the same analytical results from the shared input dataset.
+All three implementations use the same business logic and produce the same analytical result from the shared input dataset.
 
 ### Revenue by Product
 
@@ -236,7 +236,20 @@ The first two implementations produce the same analytical results from the share
 | Backpack |  $45.00 |
 | Pen      |  $20.00 |
 
-The Self-Managed Spark implementation successfully runs the pipeline through:
+### Lean Stack
+
+The pipeline successfully runs through:
+
+```text
+Airflow
+ → Python + Pandas
+ → DuckDB
+ → SQL
+```
+
+### Self-Managed Spark
+
+The pipeline successfully runs through:
 
 ```text
 Airflow
@@ -247,7 +260,18 @@ Airflow
  → DuckDB
 ```
 
-The Databricks implementation will be evaluated using the same business logic and output expectations.
+### Databricks
+
+The pipeline successfully runs through:
+
+```text
+Databricks Jobs
+ → Apache Spark
+ → Delta Lake
+ → Databricks SQL
+```
+
+The Databricks implementation also demonstrates Git-based management of the notebook and Job configuration.
 
 ---
 
@@ -264,11 +288,13 @@ The Databricks implementation will be evaluated using the same business logic an
 * DuckDB
 * Managed data platforms
 * Delta Lake
+* Databricks Jobs / Workflows
 * Technology selection
 * Operational ownership
 * Scalability considerations
 * Reproducible local environments with Docker
 * Git-based project organization
+* Infrastructure and configuration as code
 
 ---
 
@@ -295,18 +321,23 @@ data-engineering-lifecycle/
 │   ├── Dockerfile
 │   └── docker-compose.yaml
 │
-└── databricks/ 
+└── databricks/
+    ├── daily_sales.csv
+    ├── daily_sales_pipeline.ipynb
+    ├── databricks.yml
+    └── resources/
+        └── daily_sales_job.yml
 ```
 
 ---
 
 ## Status
 
-| Implementation     | Status      |
-| ------------------ | ----------- |
-| Lean Stack         | Complete    |
-| Self-Managed Spark | Complete    |
-| Databricks         | In progress |
+| Implementation     | Status   |
+| ------------------ | -------- |
+| Lean Stack         | Complete |
+| Self-Managed Spark | Complete |
+| Databricks         | Complete |
 
 ---
 
@@ -317,3 +348,4 @@ data-engineering-lifecycle/
 * Apache Spark documentation
 * DuckDB documentation
 * Databricks documentation
+
